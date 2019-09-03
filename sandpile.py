@@ -1,7 +1,10 @@
 import numpy as np
 import scipy as sp
 
+def trial2():
+    print("Hii")
 
+    
 class SandPile():
     """SandPile class
     """
@@ -68,3 +71,5 @@ class SandPile():
 
     # You are free to define more methods within this class
 
+    def trial(self):
+        print("hi")
