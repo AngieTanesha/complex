@@ -66,7 +66,8 @@ class SandPile():
         self.time += 1
 
 
-        print(f"grid before: {self.grid}")
+        print(f"grid before:")
+        print(f"{self.grid}")
 
 
     def mass(self):
@@ -110,7 +111,12 @@ class SandPile():
             self.grid[x][y+1] += 1
             self.grid[x][y-1] += 1
 
-        elif x==(self.width - 1):
+        elif y==(self.width - 1):
+            self.grid[x-1][y] += 1
+            self.grid[x+1][y] += 1
+            self.grid[x][y-1] += 1
+        else:
+            self.grid[x-1][y] += 1
             self.grid[x+1][y] += 1
             self.grid[x][y+1] += 1
             self.grid[x][y-1] += 1
@@ -122,9 +128,8 @@ class SandPile():
 
         """
 
-        max_topple = 5
+        max_topple = 50000
         event = 0
-        self.drop_sand(100)
 
 
         for x in range(self.grid.shape[0]):
@@ -135,8 +140,9 @@ class SandPile():
                     event += 1
 
                 if event == max_topple:
-                    break
+                    continue
+                    #print(f"\nevent no. {event}")
+                    #print(f"{self.grid}")
 
-        
 
     # You are free to define more methods within this class
