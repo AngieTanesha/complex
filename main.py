@@ -62,4 +62,3 @@ if __name__ == "__main__":
     ax.set_ylabel("Frequency")
     fig.savefig("output/example_histogram.pdf")
     pyplot.close(fig)
-
