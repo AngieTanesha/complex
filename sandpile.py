@@ -1,5 +1,9 @@
 import numpy as np
 import scipy as sp
+import seaborn as sns
+import sys
+
+sys.setrecursionlimit(10000)
 
 class SandPile():
     """SandPile class
@@ -61,17 +65,21 @@ class SandPile():
 
             coordinates = np.array((x_coordinates, y_coordinates)).T
 
-        for x, y in coordinates:
+            for x, y in coordinates:
 
-            self.grid[x][y] += 1
+                self.grid[x][y] += 1
+
+        else:
+
+            self.grid[site[0], site[1]] += 1
 
 
         self.mass_history = np.append(self.mass_history, n)
         self.time += 1
 
-
-        print(f"grid now:")
-        print(f"{self.grid}")
+        # VERY USEFUL DEBUG LOOK AT EACH GRID
+        # print(f"grid now:")
+        # print(f"{self.grid}")
 
 
     def mass(self):
@@ -163,10 +171,16 @@ class SandPile():
         the avalanche in the appropriate variables.
 
         """
+        centre = [int(self.grid.shape[0]/2), int(self.grid.shape[1]/2)]
+
         # keep dropping sand until there's a topple.
         if self.topples == 0 and np.amax(self.grid) < 4:
 
             self.drop_sand(n)
+            self.time += 1
+
+            np.append(self.mass_history, self.mass())
+
 
         for x in range(self.grid.shape[0]):
             for y in range(self.grid.shape[1]):
@@ -182,8 +196,10 @@ class SandPile():
                     # Update avalanche parameters
 
                     # Keep track of the number of topples,
-                    old = self.topples
+
                     self.topples += 1
+
+                    self.time += 1
 
                     # sand lost
                     self.loss += self.sand_loss(site)
@@ -191,6 +207,8 @@ class SandPile():
                     # Now delete sand at toppling site. It is important to do this
                     # only after calling sand_loss
                     self.grid[site] -= 4
+
+                    np.append(self.mass_history, self.mass())
 
                     #print(self.grid)
 
@@ -210,18 +228,27 @@ class SandPile():
 
                 # At the end of the grid,
                 elif x==(self.grid.shape[0]-1) and y==(self.grid.shape[1] -1):
+                    variation = 1000
+                    # Check if mass has stabilised (TUNE THIS DEFINITION)
+                    if self.time > 50:
+                        variation = 0
+                        stop = int(len(self.mass_history)*0.1)
+                        for i in range(1,stop):
+                            variation = abs(variation + self.mass_history[-i] / self.mass())
+                        #     #print(f"variation {variation}")
 
-                    # Check if there's one sand deletion. If that's the case,
-                    # stop the avalanche.
-                    if self.topples > 2 and self.check_stabilised(old):
-                        print("I have truly stabilised")
+                        # print(f"len {len(self.mass_history)}")
+                        # print(f"stop {stop}")
+                        # print(f"variation {variation}")
+                        # print(f"time {self.time}")
 
-                        return True
+                        if variation < 0.0:
+                            return True
 
-                    # if no 1 sand deletion, drop sand.
+                        # if not stabilised,
                     self.drop_sand(n)
 
-        self.avalanche()
+        self.avalanche(n)
 
 
 
