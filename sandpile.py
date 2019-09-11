@@ -1,9 +1,7 @@
 import numpy as np
 import scipy as sp
 import seaborn as sns
-import sys
 
-sys.setrecursionlimit(10000)
 
 class SandPile():
     """SandPile class
@@ -173,82 +171,56 @@ class SandPile():
         """
         centre = [int(self.grid.shape[0]/2), int(self.grid.shape[1]/2)]
 
-        # keep dropping sand until there's a topple.
-        if self.topples == 0 and np.amax(self.grid) < 4:
+
+        # ONLY STEP 1
+        while np.amax(self.grid) < 4:
 
             self.drop_sand(n)
             self.time += 1
 
             np.append(self.mass_history, self.mass())
 
-
-        for x in range(self.grid.shape[0]):
-            for y in range(self.grid.shape[1]):
-
-                if self.grid[x,y] >= 4:
+        # STEP 2 and 3 there are toppling
+        while np.amax(self.grid) > 3:
 
 
-                    self.topple((x,y))
+            # get critical points
+            x, y = np.where(self.grid > 3)
+
+            # topple critical points
+            for i in range(len(x)):
+                site = (x[i], y[i])
+
+                self.topple(site)
+                # Update avalanche parameters
+
+                # Keep track of the number of topples,
+
+                self.topples += 1
+
+                self.time += 1
+
+                # sand lost
+                self.loss += self.sand_loss(site)
+
+                # Now delete sand at toppling site. It is important to do this
+                # only after calling sand_loss
+                self.grid[site] -= 4
+
+                np.append(self.mass_history, self.mass())
+
+                #print(self.grid)
+
+                # unique area toppled
+
+                if site not in self.area:
+
+                    self.area.append(site)
+
+        # STEP 4 TOPPLING DONE
+        return True
 
 
-                    site = (x, y)
-
-                    # Update avalanche parameters
-
-                    # Keep track of the number of topples,
-
-                    self.topples += 1
-
-                    self.time += 1
-
-                    # sand lost
-                    self.loss += self.sand_loss(site)
-
-                    # Now delete sand at toppling site. It is important to do this
-                    # only after calling sand_loss
-                    self.grid[site] -= 4
-
-                    np.append(self.mass_history, self.mass())
-
-                    #print(self.grid)
-
-                    # unique area toppled
-                    if site not in self.area:
-                        self.area.append(site)
-
-                    # # Print off grids
-                    # print("\n--------------------")
-                    # print(f"for site {site}")
-                    # print(self.grid)
-                    # print(f"I lost {self.loss} so far")
-
-
-                    # Recur. This might be a bad idea.
-                    #self.avalanche()
-
-                # At the end of the grid,
-                elif x==(self.grid.shape[0]-1) and y==(self.grid.shape[1] -1):
-                    variation = 1000
-                    # Check if mass has stabilised (TUNE THIS DEFINITION)
-                    if self.time > 50:
-                        variation = 0
-                        stop = int(len(self.mass_history)*0.1)
-                        for i in range(1,stop):
-                            variation = abs(variation + self.mass_history[-i] / self.mass())
-                        #     #print(f"variation {variation}")
-
-                        # print(f"len {len(self.mass_history)}")
-                        # print(f"stop {stop}")
-                        # print(f"variation {variation}")
-                        # print(f"time {self.time}")
-
-                        if variation < 0.0:
-                            return True
-
-                        # if not stabilised,
-                    self.drop_sand(n)
-
-        self.avalanche(n)
 
 
 
